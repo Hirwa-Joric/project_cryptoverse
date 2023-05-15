@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import millify from 'millify';
 import { Typography, Row, Col, Statistic } from 'antd';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
-import { useGetCryptosQuery } from '../services/cryptoApi';
 import Cryptocurrencies from './Cryptocurrencies';
 import News from './News';
 import Loader from './Loader';
@@ -11,8 +11,24 @@ import Loader from './Loader';
 const { Title } = Typography;
 
 const Homepage = () => {
-  const { data, isFetching } = useGetCryptosQuery(10);
-  const globalStats = data?.data?.stats;
+  const [globalStats, setGlobalStats] = useState({});
+  const [isFetching, setIsFetching] = useState(false);
+
+  useEffect(() => {
+    const fetchGlobalStats = async () => {
+      setIsFetching(true);
+      try {
+        const { data } = await axios.get(`${process.env.REACT_APP_CRYPTO_API_URL}/stats`);
+        setGlobalStats(data);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Error while fetching global stats:', error);
+      }
+      setIsFetching(false);
+    };
+
+    fetchGlobalStats();
+  }, []);
 
   if (isFetching) return <Loader />;
 
